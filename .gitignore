@@ -1,0 +1,5 @@
+geckodriver.log
+geckodriver.exe
+superlistsenv
+__pycache__
+*.pyc
