@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import resolve
 from lists.views import home_page
 from django.http import HttpRequest
+from django.template.loader import render_to_string
 
 # Create your tests here.
 
@@ -24,7 +25,15 @@ class HomePageTest(TestCase):
         # the raw bytes to string
         html = response.content.decode('utf-8')
 
-        # check that the html looks ok
-        self.assertTrue(html.startswith('<html>'))
-        self.assertIn('<title>To-Do lists</title>', html)
-        self.assertTrue(html.endswith('</html>'))
+        # return a string of html based on the html file
+        expected_html = render_to_string('home.html')
+        self.assertEqual(html, expected_html)
+
+    def test_home_template(self):
+        
+        # instead of manual HttpRequest object we just specify
+        # what url we want
+        response = self.client.get('/') 
+        
+        # test that the response coresponds to the home.html template
+        self.assertTemplateUsed(response, 'home.html')
