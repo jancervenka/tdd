@@ -1,0 +1,6 @@
+1.
+In Django, the ORM’s job is to model the database, but there’s a second system that’s in charge of actually building the database called migrations. Its job is to give you the ability to add and remove tables and columns, based on changes you make to your models.py files.
+
+One way to think of it is as a version control system for your database. As we’ll see later, it comes in particularly useful when we need to upgrade a database that’s deployed on a live server.
+
+For now all we need to know is how to build our first database migration, which we do using the makemigrations

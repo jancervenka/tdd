@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import resolve
 from lists.views import home_page
+from lists.models import Item
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -45,3 +46,28 @@ class HomePageTest(TestCase):
         self.assertIn('A new List item', response.content.decode())
         # test that the correct template is used
         self.assertTemplateUsed(response, 'home.html')
+
+# item model (ORM), model = row in a database, attributes = columns
+class ItemModelTest(TestCase):
+    # this test is touching the databse, unit test "should never" do that
+    # it is an integrated test because it uses external resources (the databse)
+    def test_saving_and_retrieving_items(self):
+        # create and test a model instance
+        first_item = Item()
+        first_item.text = 'The first (ever) list item'
+        first_item.save() # save it to the database (django api)
+
+        second_item = Item()
+        second_item.text = 'Item the second'
+        second_item.save()
+
+        # query to get all the item object instances from the database table (django api)
+        saved_items = Item.objects.all() # object is a class attribute
+        # saved_items is a list-like object "QuerySet"
+        self.assertEqual(saved_items.count(), 2) # check that there are two
+
+        first_saved_item = saved_items[0]
+        second_saved_item = saved_items[1]
+
+        self.assertEqual(first_saved_item.text, 'The first (ever) list item')
+        self.assertEqual(second_saved_item.text, 'Item the second')
