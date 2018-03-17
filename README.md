@@ -1,1 +1,1 @@
-Django TDD training project
+Django/Python TDD training project
