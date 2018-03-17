@@ -42,10 +42,42 @@ class HomePageTest(TestCase):
     def test_can_save_a_POST_request(self):
         # testing new http request with POST sending "A new List item" as item_text to the server
         response = self.client.post('/', data = {'item_text' : 'A new List item'})
-        # test that the data "A new List item" are somewhere in the html returned by the response
-        self.assertIn('A new List item', response.content.decode())
-        # test that the correct template is used
-        self.assertTemplateUsed(response, 'home.html')
+        
+        # we check that one Item model instance has been saved to the databse
+        self.assertEqual(Item.objects.count(), 1)
+
+        # we retrieve the first object stored in the database
+        new_item = Item.objects.first()
+        
+        # we check that the text in the instance matches with the text we sent in the POST request
+        self.assertEqual(new_item.text, 'A new List item')
+
+    def test_redirects_after_POST(self):
+        # testing new http request with POST sending "A new List item" as item_text to the server
+        response = self.client.post('/', data = {'item_text' : 'A new List item'})
+
+        # POST request should be redirected to a GET request to prevent duplicate form submissions
+        # https://en.wikipedia.org/wiki/Post/Redirect/Get
+        # check that the http response is redirection (302 code)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+    def test_only_saves_items_when_necessary(self):
+        self.client.get('/')
+        # check that there is no object in the database when we just request the home page
+        self.assertEqual(Item.objects.count(), 0)
+
+    def test_displays_all_list_items(self):
+
+        # create some mock items
+        Item.objects.create(text = 'itemey 1')
+        Item.objects.create(text = 'itemey 2')
+
+        response = self.client.get('/')
+
+        # check that the items are in the response content
+        self.assertIn('itemey 1', response.content.decode())
+        self.assertIn('itemey 2', response.content.decode())
 
 # item model (ORM), model = row in a database, attributes = columns
 class ItemModelTest(TestCase):
