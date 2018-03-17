@@ -1,9 +1,18 @@
+from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import unittest
 import time
 
-class NewVisitorTest(unittest.TestCase):
+# we have created app functional_tests
+# with test file functional_tests/tests.py
+# we run the tests using python manage.py test functional_tests
+# We change the NewVisitorTest inheritence (unittest.TestCase) to django.test.LiveServerTestCase
+# LiveServerTestCase creates a test database and runs a development server so we don't have to
+# run the server manually and we also don't have té flush the production databse after each
+# functional test run
+
+class NewVisitorTest(LiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -21,7 +30,8 @@ class NewVisitorTest(unittest.TestCase):
 
     # any method with test at the beginning of the name is a test
     def test_can_start_a_list_and_retrieve_it_later(self):
-        self.browser.get('http://localhost:8000')
+        #self.browser.get('http://localhost:8000') # old unittest version
+        self.browser.get(self.live_server_url) # attribute with url to access the development server
 
         # notice the to-do title
         self.assertIn('To-Do', self.browser.title)
@@ -61,7 +71,7 @@ class NewVisitorTest(unittest.TestCase):
 
         self.fail('Finish the test!')
 
-if __name__ == '__main__':
-
-    # runs the test
-    unittest.main(warnings = 'ignore')
+#if __name__ == '__main__':
+#
+#    # runs the test
+#    unittest.main(warnings = 'ignore')
