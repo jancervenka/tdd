@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from lists.models import Item
+from lists.models import Item, List
 
 # Create your views here.
 
@@ -27,7 +27,8 @@ def new_list(request):
 	# to push it to the database
 	# we create the new object only for POST requests
 	# with the text as the data from the POST request from the item_text form field
-	Item.objects.create(text=request.POST['item_text'])
+	list_ = List.objects.create()
+	Item.objects.create(text=request.POST['item_text'], list = list_)
 
 	# return rediretction to GET home page to prevent duplicate form submissions
     # redirect calls the home page function and skips this if statement

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import resolve
 from lists.views import home_page
-from lists.models import Item
+from lists.models import Item, List
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 
@@ -45,18 +45,31 @@ class HomePageTest(TestCase):
         self.assertEqual(Item.objects.count(), 0)
 
 # item model (ORM), model = row in a database, attributes = columns
-class ItemModelTest(TestCase):
+class ListAndItemModelTest(TestCase):
     # this test is touching the databse, unit test "should never" do that
     # it is an integrated test because it uses external resources (the databse)
     def test_saving_and_retrieving_items(self):
+        # create and save an empty list 
+        list_ = List()
+        list_.save()
+
         # create and test a model instance
         first_item = Item()
         first_item.text = 'The first (ever) list item'
+        # assign it to the list
+        first_item.list = list_
         first_item.save() # save it to the database (django api)
 
         second_item = Item()
         second_item.text = 'Item the second'
+        second_item.list = list_
         second_item.save()
+
+        # get the saved list and check that it is the same one
+        # we saved
+        saved_list = List.objects.first()
+        # checks that the FK is the same
+        self.assertEqual(saved_list, list_)
 
         # query to get all the item object instances from the database table (django api)
         saved_items = Item.objects.all() # object is a class attribute
@@ -67,8 +80,10 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
 
         self.assertEqual(first_saved_item.text, 'The first (ever) list item')
+        # we check that the saved items belong to the list
+        self.assertEqual(first_saved_item.list, list_)
         self.assertEqual(second_saved_item.text, 'Item the second')
-
+        self.assertEqual(second_saved_item.list, list_)
 
 class ListViewTest(TestCase):
 
@@ -79,10 +94,11 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(response, 'list.html')
 
     def test_displays_all_items(self):
+        list_ = List.objects.create()
 
-        # create some mock items
-        Item.objects.create(text = 'itemey 1')
-        Item.objects.create(text = 'itemey 2')
+        # create some mock items and assign them to the list
+        Item.objects.create(text = 'itemey 1', list = list_)
+        Item.objects.create(text = 'itemey 2', list = list_)
 
         response = self.client.get('/lists/the-only-list-in-the-world/')
 
