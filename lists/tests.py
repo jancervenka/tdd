@@ -60,24 +60,15 @@ class HomePageTest(TestCase):
         # https://en.wikipedia.org/wiki/Post/Redirect/Get
         # check that the http response is redirection (302 code)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        
+        # check that the redirected response has the correct REST-ish url
+        # we only support one list (= one url) now
+        self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
 
     def test_only_saves_items_when_necessary(self):
         self.client.get('/')
         # check that there is no object in the database when we just request the home page
         self.assertEqual(Item.objects.count(), 0)
-
-    def test_displays_all_list_items(self):
-
-        # create some mock items
-        Item.objects.create(text = 'itemey 1')
-        Item.objects.create(text = 'itemey 2')
-
-        response = self.client.get('/')
-
-        # check that the items are in the response content
-        self.assertIn('itemey 1', response.content.decode())
-        self.assertIn('itemey 2', response.content.decode())
 
 # item model (ORM), model = row in a database, attributes = columns
 class ItemModelTest(TestCase):
@@ -103,3 +94,26 @@ class ItemModelTest(TestCase):
 
         self.assertEqual(first_saved_item.text, 'The first (ever) list item')
         self.assertEqual(second_saved_item.text, 'Item the second')
+
+
+class ListViewTest(TestCase):
+
+    def test_uses_list_template(self):
+        # we want to seperate the template for the home page (input box only)
+        # and for the list view
+        response = self.client.get('/lists/the-only-list-in-the-world/')
+        self.assertTemplateUsed(response, 'list.html')
+
+    def test_displays_all_items(self):
+
+        # create some mock items
+        Item.objects.create(text = 'itemey 1')
+        Item.objects.create(text = 'itemey 2')
+
+        response = self.client.get('/lists/the-only-list-in-the-world/')
+
+        # check that the items are in the response content
+        self.assertContains(response, 'itemey 1')
+        self.assertContains(response, 'itemey 2')
+
+

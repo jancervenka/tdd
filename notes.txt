@@ -14,3 +14,6 @@ We’ve told Django everything it needs to create the database, first via models.p
 
 3.
 In order to run just the unit tests, we can specify that we want to only run the tests for the lists or the functional_tests app:
+
+4.
+By default the browser sends the POST data back to the same URL it’s currently on. When we’re on the home page that works fine, but when we’re on our only-list-in-the-world page, it doesn’t.

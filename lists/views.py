@@ -36,11 +36,21 @@ def home_page(request):
 
 		# return rediretction to GET home page to prevent duplicate form submissions
 		# redirect calls the home page function and skips this if statement
-		return redirect('/')
-
+		# the response rdirects to the url of the list
+        # we only support one list (= one url) now
+		return redirect('/lists/the-only-list-in-the-world/')
 
 	# Not a POST, just return the home page
+	# do not show list
+	return render(request, 'home.html')
+
+# for the '/lists/the-only-list-in-the-world/' url (or any other list url)
+def view_list(request):
+	# get all the items from the database
 	items = Item.objects.all()
-	# render the items to the items list in the {% for %} tag which displays their .text
+	# and render them inside the template tag
+
+	# render the items from te db to the items list in the {% for %} tag which displays their .text
 	# attribute in the template
-	return render(request, 'home.html', {'items': items})
+	# request have the REST-ish url /lists/.+
+	return render(request, 'list.html', {'items' : items})
