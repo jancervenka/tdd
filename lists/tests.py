@@ -39,32 +39,6 @@ class HomePageTest(TestCase):
         # test that the response coresponds to the home.html template
         self.assertTemplateUsed(response, 'home.html')
 
-    def test_can_save_a_POST_request(self):
-        # testing new http request with POST sending "A new List item" as item_text to the server
-        response = self.client.post('/', data = {'item_text' : 'A new List item'})
-        
-        # we check that one Item model instance has been saved to the databse
-        self.assertEqual(Item.objects.count(), 1)
-
-        # we retrieve the first object stored in the database
-        new_item = Item.objects.first()
-        
-        # we check that the text in the instance matches with the text we sent in the POST request
-        self.assertEqual(new_item.text, 'A new List item')
-
-    def test_redirects_after_POST(self):
-        # testing new http request with POST sending "A new List item" as item_text to the server
-        response = self.client.post('/', data = {'item_text' : 'A new List item'})
-
-        # POST request should be redirected to a GET request to prevent duplicate form submissions
-        # https://en.wikipedia.org/wiki/Post/Redirect/Get
-        # check that the http response is redirection (302 code)
-        self.assertEqual(response.status_code, 302)
-        
-        # check that the redirected response has the correct REST-ish url
-        # we only support one list (= one url) now
-        self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
-
     def test_only_saves_items_when_necessary(self):
         self.client.get('/')
         # check that there is no object in the database when we just request the home page
@@ -115,5 +89,37 @@ class ListViewTest(TestCase):
         # check that the items are in the response content
         self.assertContains(response, 'itemey 1')
         self.assertContains(response, 'itemey 2')
+
+class NewListTest(TestCase):
+
+    def test_can_save_a_POST_request(self):
+        # testing new http request with POST sending "A new List item" as item_text to the server
+        response = self.client.post('/lists/new', data = {'item_text' : 'A new List item'})
+        
+        # we check that one Item model instance has been saved to the databse
+        self.assertEqual(Item.objects.count(), 1)
+
+        # we retrieve the first object stored in the database
+        new_item = Item.objects.first()
+        
+        # we check that the text in the instance matches with the text we sent in the POST request
+        self.assertEqual(new_item.text, 'A new List item')
+
+    def test_redirects_after_POST(self):
+        # testing new http request with POST sending "A new List item" as item_text to the server
+        response = self.client.post('/lists/new', data = {'item_text' : 'A new List item'})
+
+        # POST request should be redirected to a GET request to prevent duplicate form submissions
+        # https://en.wikipedia.org/wiki/Post/Redirect/Get
+        # check that the http response is redirection (302 code)
+        #self.assertEqual(response.status_code, 302)
+        
+        # check that the redirected response has the correct REST-ish url
+        # we only support one list (= one url) now
+        #self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
+
+        # combines the previous two asserts
+        self.assertRedirects(response, '/lists/the-only-list-in-the-world/')
+
 
 
