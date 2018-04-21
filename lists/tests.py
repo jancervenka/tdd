@@ -90,21 +90,40 @@ class ListViewTest(TestCase):
     def test_uses_list_template(self):
         # we want to seperate the template for the home page (input box only)
         # and for the list view
-        response = self.client.get('/lists/the-only-list-in-the-world/')
-        self.assertTemplateUsed(response, 'list.html')
-
-    def test_displays_all_items(self):
         list_ = List.objects.create()
 
+        # each list has a specific id
+        response = self.client.get(f'/lists/{list_.id}/')
+        self.assertTemplateUsed(response, 'list.html')
+
+    def test_displays_only_items_for_that_list(self):
+        correct_list = List.objects.create()
+
         # create some mock items and assign them to the list
-        Item.objects.create(text = 'itemey 1', list = list_)
-        Item.objects.create(text = 'itemey 2', list = list_)
+        Item.objects.create(text = 'itemey 1', list = correct_list)
+        Item.objects.create(text = 'itemey 2', list = correct_list)
 
-        response = self.client.get('/lists/the-only-list-in-the-world/')
+        # create a second list with some items
+        other_list = List.objects.create()
+        Item.objects.create(text = 'other list itemey 1', list = other_list)
+        Item.objects.create(text = 'other list itemey 2', list = other_list)
 
-        # check that the items are in the response content
+
+        # get the view of the first list
+        response = self.client.get(f'/lists/{correct_list.id}/')
+
+        # check that only the items from the first list are in the response content
         self.assertContains(response, 'itemey 1')
         self.assertContains(response, 'itemey 2')
+        self.assertNotContains(response, 'other list itemey 1')
+        self.assertNotContains(response, 'other list itemey 2')
+
+    def passes_correct_list_to_template(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        response = self.client.get(f'/lists/{correct_list.id}/')
+        self.assertEqual(response.context['list'], correct_list)
 
 class NewListTest(TestCase):
 
@@ -127,15 +146,45 @@ class NewListTest(TestCase):
 
         # POST request should be redirected to a GET request to prevent duplicate form submissions
         # https://en.wikipedia.org/wiki/Post/Redirect/Get
-        # check that the http response is redirection (302 code)
-        #self.assertEqual(response.status_code, 302)
+
         
         # check that the redirected response has the correct REST-ish url
-        # we only support one list (= one url) now
-        #self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
+        new_list = List.objects.first()
 
         # combines the previous two asserts
-        self.assertRedirects(response, '/lists/the-only-list-in-the-world/')
+        self.assertRedirects(response, f'/lists/{new_list.id}/')
+
+class NewItemTest(TestCase):
+
+    def test_can_save_a_POST_request_to_an_existing_list(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        # post new item to the existing correct list
+        self.client.post(f'/lists/{correct_list.id}/add_item',
+            data = {'item_text' : 'A new item for an existing list'})
+
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+
+        # check that the first item in the db matches to the item we posted
+        self.assertEqual(new_item.text, 'A new item for an existing list')
+        # check that the new item FK is the correct list
+        self.assertEqual(new_item.list, correct_list)
+
+    def test_redirects_to_list_view(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        # post new item to the existing correct list
+        response = self.client.post(f'/lists/{correct_list.id}/add_item',
+            data = {'item_text' : 'A new item for an existing list'})
+
+        # check that the post redirects to the list view for the correct list
+        self.assertRedirects(response, f'/lists/{correct_list.id}/')
+
+
 
 
 

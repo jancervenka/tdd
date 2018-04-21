@@ -17,3 +17,7 @@ In order to run just the unit tests, we can specify that we want to only run the
 
 4.
 By default the browser sends the POST data back to the same URL it’s currently on. When we’re on the home page that works fine, but when we’re on our only-list-in-the-world page, it doesn’t.
+
+5.
+{% for item in list.item_set.all %} 
+.item_set is called a reverse lookup. It’s one of Django’s incredibly useful bits of ORM that lets you look up an object’s related items from a different table

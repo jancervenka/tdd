@@ -131,6 +131,7 @@ class NewVisitorTest(LiveServerTestCase):
         #check that the urls are different
         self.assertNotEqual(francis_list_url, edith_list_url)        
 
+        page_text = self.browser.find_element_by_tag_name('body').text
         # check that the previous list is not there but the new one is
         self.assertNotIn('Buy peacock feathers', page_text)
         self.assertIn('Buy milk', page_text)

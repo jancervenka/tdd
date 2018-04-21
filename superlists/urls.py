@@ -20,5 +20,10 @@ from lists import views
 urlpatterns = [
     url(r'^$', views.home_page, name = 'home'),
     url(r'^lists/new$', views.new_list, name = 'new_list'),
-    url(r'^lists/the-only-list-in-the-world/$', views.view_list, name='view_list')
+    # regex capture group, the chars between the '/' will get passed to the view
+    # as an argument. if we go to url lists/aa/, the argument aa is passed along with the request
+    # argument to the view list function view_list(request, 'aa') so it knows which lists
+    # to display
+    url(r'^lists/(\d+)/$', views.view_list, name = 'view_list'),
+    url(r'^lists/(\d+)/add_item$', views.add_item, name = 'add_item')
 ]

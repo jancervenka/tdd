@@ -8,16 +8,15 @@ from lists.models import Item, List
 def home_page(request):
 	return render(request, 'home.html')
 
-# for the '/lists/the-only-list-in-the-world/' url (or any other list url)
-def view_list(request):
-	# get all the items from the database
-	items = Item.objects.all()
-	# and render them inside the template tag
+# for the '/lists/{list_id}/'
+def view_list(request, list_id):
+		
+	list_ = List.objects.get(id = list_id)
+	
 
-	# render the items from te db to the items list in the {% for %} tag which displays their .text
-	# attribute in the template
+	# pass the the list object to the template
 	# request have the REST-ish url /lists/.+
-	return render(request, 'list.html', {'items' : items})
+	return render(request, 'list.html', {'list' : list_})
 
 
 def new_list(request):
@@ -25,13 +24,19 @@ def new_list(request):
 	# .objcets.create() is a shortand for creating new object with specified
 	# attributed values as arguments and automatically calling the .save()
 	# to push it to the database
-	# we create the new object only for POST requests
 	# with the text as the data from the POST request from the item_text form field
 	list_ = List.objects.create()
-	Item.objects.create(text=request.POST['item_text'], list = list_)
+	Item.objects.create(text=request.POST['item_text'], list=list_)
 
 	# return rediretction to GET home page to prevent duplicate form submissions
     # redirect calls the home page function and skips this if statement
 	# the response rdirects to the url of the list
-    # we only support one list (= one url) now
-	return redirect('/lists/the-only-list-in-the-world/')
+	return redirect(f'/lists/{list_.id}/')
+
+# for the '/lists/{list_id}/add_item'
+def add_item(request, list_id):
+	# after posting item to an exting list, just redirects to the list url
+	list_ = List.objects.get(id = list_id)
+	# create a new item for the list with text from the POST argument
+	Item.objects.create(text=request.POST['item_text'], list=list_)
+	return redirect(f'/lists/{list_.id}/')
