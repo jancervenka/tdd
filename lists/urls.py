@@ -13,14 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import include, url
-from lists import views as list_views  
-from lists import urls as list_urls
+from django.conf.urls import url
+from django.urls import path
+from lists import views
 
 urlpatterns = [
-    url(r'^$', list_views.home_page, name = 'home'),
-    # Here’s the include. Notice that it can take a part of a URL regex as a prefix, 
-    # which will be applied to all the included URLs 
-    # (this is the bit where we reduce duplication, as well as giving our code a better structure).
-    url(r'^lists/', include(list_urls)),
+    url(r'^new$', views.new_list, name = 'new_list'),
+    # regex capture group, the chars between the '/' will get passed to the view
+    # as an argument. if we go to url lists/aa/, the argument aa is passed along with the request
+    # argument to the view list function view_list(request, 'aa') so it knows which lists
+    # to display
+    url(r'^(\d+)/$', views.view_list, name = 'view_list'),
+    url(r'^(\d+)/add_item$', views.add_item, name = 'add_item')
 ]
